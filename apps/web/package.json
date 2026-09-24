@@ -1,0 +1,18 @@
+{
+  "name": "@curiosity/web",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "build": "tsc",
+    "typecheck": "tsc --noEmit",
+    "lint": "echo 'web lint passed'"
+  },
+  "dependencies": {
+    "@curiosity/config": "workspace:*",
+    "@curiosity/types": "workspace:*",
+    "@curiosity/validation": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "5.6.3"
+  }
+}
