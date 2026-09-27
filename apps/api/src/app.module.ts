@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { LoggerModule } from 'nestjs-pino';
 import { randomUUID } from 'crypto';
 import { HealthController } from './common/health.controller';
+import { RedisModule } from './common/redis.module';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import { TopicsModule } from './topics/topics.module';
@@ -49,6 +50,8 @@ import { PrismaModule } from './prisma/prisma.module';
             : undefined,
       },
     }),
+    RedisModule,
+    PrismaModule,
     AuthModule,
     UsersModule,
     TopicsModule,
@@ -67,7 +70,6 @@ import { PrismaModule } from './prisma/prisma.module';
     KnowledgeModule,
     AiModule,
     JobsModule,
-    PrismaModule,
   ],
   controllers: [HealthController],
 })
