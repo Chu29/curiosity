@@ -1,9 +1,19 @@
 import 'reflect-metadata';
+import * as fs from 'fs';
+import * as path from 'path';
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
+import { validateEnv } from '@curiosity/config';
 import { AppModule } from './app.module';
 
 async function bootstrap(): Promise<void> {
+  const envPath = path.resolve(process.cwd(), '.env');
+  if (fs.existsSync(envPath) && typeof process.loadEnvFile === 'function') {
+    process.loadEnvFile(envPath);
+  }
+
+  const env = validateEnv();
+
   const app = await NestFactory.create(AppModule);
   app.setGlobalPrefix('api/v1');
   app.useGlobalPipes(
@@ -13,7 +23,8 @@ async function bootstrap(): Promise<void> {
       transform: true,
     }),
   );
-  const port = process.env['PORT'] ?? 3001;
+
+  const port = env.PORT;
   await app.listen(port);
   console.log(`API running on http://localhost:${port}/api/v1`);
 }
