@@ -3,6 +3,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
+import { Logger } from 'nestjs-pino';
 import { validateEnv } from '@curiosity/config';
 import { AppModule } from './app.module';
 
@@ -14,7 +15,8 @@ async function bootstrap(): Promise<void> {
 
   const env = validateEnv();
 
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, { bufferLogs: true });
+  app.useLogger(app.get(Logger));
   app.setGlobalPrefix('api/v1');
   app.useGlobalPipes(
     new ValidationPipe({
@@ -26,7 +28,7 @@ async function bootstrap(): Promise<void> {
 
   const port = env.PORT;
   await app.listen(port);
-  console.log(`API running on http://localhost:${port}/api/v1`);
+  app.get(Logger).log(`API running on http://localhost:${port}/api/v1`);
 }
 
 bootstrap();

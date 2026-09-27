@@ -1,4 +1,6 @@
 import { Module } from '@nestjs/common';
+import { LoggerModule } from 'nestjs-pino';
+import { randomUUID } from 'crypto';
 import { HealthController } from './common/health.controller';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
@@ -22,6 +24,31 @@ import { PrismaModule } from './prisma/prisma.module';
 
 @Module({
   imports: [
+    LoggerModule.forRoot({
+      pinoHttp: {
+        genReqId: (req, res) => {
+          const existing = req.headers['x-request-id'] || req.headers['x-correlation-id'];
+          const id = (Array.isArray(existing) ? existing[0] : existing) || randomUUID();
+          res.setHeader('X-Request-Id', id);
+          return id;
+        },
+        customProps: (req) => ({
+          requestId: (req as any).id,
+        }),
+        transport:
+          process.env['NODE_ENV'] !== 'production'
+            ? {
+                target: 'pino-pretty',
+                options: {
+                  colorize: true,
+                  singleLine: true,
+                  translateTime: 'SYS:standard',
+                  messageFormat: '[req:{req.id}] {msg}',
+                },
+              }
+            : undefined,
+      },
+    }),
     AuthModule,
     UsersModule,
     TopicsModule,
