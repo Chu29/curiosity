@@ -64,6 +64,28 @@ export class SessionsController {
     });
   }
 
+  @Post(':sessionId/ready-to-present')
+  @HttpCode(HttpStatus.OK)
+  @UseGuards(OptionalJwtAuthGuard)
+  async readyToPresent(
+    @Param('sessionId') sessionId: string,
+    @Body() dto: SessionActionDto,
+    @CurrentUser() user: any,
+    @Headers('x-guest-token') headerGuestToken?: string,
+  ) {
+    const rawGuestToken = dto?.guestToken || headerGuestToken;
+    let guestId: string | null = null;
+
+    if (rawGuestToken) {
+      guestId = await this.authService.validateGuestToken(rawGuestToken);
+    }
+
+    return this.sessionsService.readyToPresent(sessionId, {
+      userId: user?.id ?? null,
+      guestId,
+    });
+  }
+
   @Post(':sessionId/abandon')
   @HttpCode(HttpStatus.OK)
   @UseGuards(OptionalJwtAuthGuard)
