@@ -6,6 +6,8 @@
   "scripts": {
     "build": "turbo run build",
     "dev": "turbo run dev",
+    "dev:api": "pnpm --filter @curiosity/api dev",
+    "dev:web": "pnpm --filter @curiosity/web dev",
     "lint": "turbo run lint",
     "typecheck": "turbo run typecheck",
     "test": "turbo run test",
