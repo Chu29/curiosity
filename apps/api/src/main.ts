@@ -8,15 +8,34 @@ import { validateEnv } from '@curiosity/config';
 import { AppModule } from './app.module';
 
 async function bootstrap(): Promise<void> {
-  const envPath = path.resolve(process.cwd(), '.env');
-  if (fs.existsSync(envPath) && typeof process.loadEnvFile === 'function') {
-    process.loadEnvFile(envPath);
+  const possibleEnvPaths = [
+    path.resolve(process.cwd(), '.env'),
+    path.resolve(process.cwd(), '../../.env'),
+    path.resolve(__dirname, '../../../.env'),
+  ];
+
+  for (const envPath of possibleEnvPaths) {
+    if (fs.existsSync(envPath) && typeof process.loadEnvFile === 'function') {
+      process.loadEnvFile(envPath);
+      break;
+    }
   }
 
   const env = validateEnv();
 
   const app = await NestFactory.create(AppModule, { bufferLogs: true });
   app.useLogger(app.get(Logger));
+
+  app.enableCors({
+    origin: [
+      'http://localhost:3000',
+      'http://127.0.0.1:3000',
+    ],
+    credentials: true,
+    methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Accept', 'Authorization', 'X-Request-Id'],
+  });
+
   app.setGlobalPrefix('api/v1');
   app.useGlobalPipes(
     new ValidationPipe({
