@@ -5,6 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { MarginRail } from '../../../components/navigation/margin-rail';
 import { useAuth } from '../../../lib/auth/auth-context';
+import { apiFetch } from '../../../lib/api/client';
 
 interface TopicDetail {
   id: string;
@@ -12,37 +13,32 @@ interface TopicDetail {
   slug: string;
   description: string;
   category: string;
-  subcategory: string;
-  difficulty: 'BEGINNER' | 'INTERMEDIATE' | 'ADVANCED';
+  subcategory: string | null;
+  difficulty: string;
   estimatedResearchMinutes: number;
 }
-
-const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001/api/v1';
 
 export default function TopicOverviewPage() {
   const params = useParams();
   const router = useRouter();
+  const { user, guest, accessToken } = useAuth();
   const topicId = params?.id as string;
-  const { user, guest, accessToken, continueAsGuest } = useAuth();
 
   const [topic, setTopic] = useState<TopicDetail | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isStarting, setIsStarting] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
-  const [activeSession, setActiveSession] = useState<any | null>(null);
 
   useEffect(() => {
     async function loadTopic() {
       if (!topicId) return;
+      setIsLoading(true);
+      setError(null);
       try {
-        const res = await fetch(`${API_BASE}/topics/${topicId}`);
-        if (!res.ok) {
-          throw new Error('Topic not found');
-        }
-        const data = await res.json();
+        const data = await apiFetch<TopicDetail>(`/topics/${topicId}`);
         setTopic(data);
       } catch (err: any) {
-        setError(err.message || 'Failed to load topic');
+        setError(err.message || 'Failed to load topic details');
       } finally {
         setIsLoading(false);
       }
@@ -60,78 +56,68 @@ export default function TopicOverviewPage() {
 
       // If user is not authenticated and has no active guest session, initiate guest session
       if (!accessToken && !currentGuest) {
-        const guestRes = await fetch(`${API_BASE}/auth/guest`, { method: 'POST' });
+        const guestRes = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001/api/v1'}/auth/guest`,
+          { method: 'POST' }
+        );
         if (guestRes.ok) {
           currentGuest = await guestRes.json();
           localStorage.setItem('curiosity_guest_session', JSON.stringify(currentGuest));
         }
       }
 
-      const headers: Record<string, string> = {
-        'Content-Type': 'application/json',
-      };
-
-      if (accessToken) {
-        headers['Authorization'] = `Bearer ${accessToken}`;
-      }
-
       // 1. Create session (Task 3.4)
-      const sessionRes = await fetch(`${API_BASE}/sessions`, {
+      const session = await apiFetch<{ id: string; status: string }>(`/sessions`, {
         method: 'POST',
-        headers,
         body: JSON.stringify({
           topicId: topic?.id,
           guestToken: currentGuest?.guestToken,
         }),
       });
 
-      if (!sessionRes.ok) {
-        const errData = await sessionRes.json().catch(() => ({}));
-        throw new Error(errData.message || 'Failed to create learning session');
-      }
-
-      const session = await sessionRes.json();
-
-      // 2. Start session (Task 3.6: transition CREATED -> RESEARCHING)
-      const startRes = await fetch(`${API_BASE}/sessions/${session.id}/start`, {
+      // 2. Generate research guide (Task 4.2)
+      await apiFetch(`/sessions/${session.id}/research-guide`, {
         method: 'POST',
-        headers,
-        body: JSON.stringify({
-          guestToken: currentGuest?.guestToken,
-        }),
       });
 
-      const startedSession = startRes.ok ? await startRes.json() : session;
-      setActiveSession(startedSession);
-      localStorage.setItem('curiosity_active_session', startedSession.id);
+      localStorage.setItem('curiosity_active_session', session.id);
+      // Route to Screen 4: Research Guide
+      router.push(`/sessions/${session.id}/guide`);
     } catch (err: any) {
       setError(err.message || 'Failed to start research session');
-    } finally {
       setIsStarting(false);
     }
   };
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-paper flex items-center justify-center">
-        <p className="text-sm font-mono text-ink-soft">Loading mission brief...</p>
+      <div className="min-h-screen bg-paper flex flex-col md:flex-row">
+        <MarginRail currentStep="OVERVIEW" />
+        <main className="flex-1 max-w-[680px] px-6 py-12 md:py-24 text-ink">
+          <div className="font-mono text-xs uppercase tracking-wider text-ink-soft animate-pulse">
+            Loading topic brief...
+          </div>
+        </main>
       </div>
     );
   }
 
   if (error || !topic) {
     return (
-      <div className="min-h-screen bg-paper flex flex-col items-center justify-center p-6">
-        <div className="max-w-md bg-paper-raised border border-rule p-8 rounded text-center">
-          <h2 className="text-lg font-serif font-bold text-ink mb-2">Topic Not Found</h2>
-          <p className="text-sm text-ink-soft mb-6">{error || 'Unable to retrieve this topic.'}</p>
-          <Link
-            href="/explore"
-            className="py-2.5 px-6 bg-accent text-accent-ink font-semibold rounded text-sm hover:brightness-95"
-          >
-            Discover Another Topic
-          </Link>
-        </div>
+      <div className="min-h-screen bg-paper flex flex-col md:flex-row">
+        <MarginRail currentStep="OVERVIEW" />
+        <main className="flex-1 max-w-[680px] px-6 py-12 md:py-24 text-ink space-y-6">
+          <h1 className="font-serif text-2xl font-semibold text-danger">Topic Unavailable</h1>
+          <p className="text-sm text-ink-soft">{error || 'Topic could not be found.'}</p>
+          <div>
+            <Link
+              href="/explore"
+              className="py-2.5 px-5 bg-paper-raised border border-rule font-medium text-sm rounded shadow-sm hover:border-rule-strong"
+            >
+              Back to Topic Discovery
+            </Link>
+          </div>
+        </main>
       </div>
     );
   }
@@ -140,12 +126,9 @@ export default function TopicOverviewPage() {
     <div className="min-h-screen bg-paper flex flex-col md:flex-row">
       <MarginRail currentStep="OVERVIEW" />
 
-      <main className="flex-1 max-w-2xl px-6 md:px-12 py-12 md:py-24">
-        {/* Breadcrumb & Metadata */}
-        <div className="flex flex-wrap items-center gap-2 text-xs text-ink-soft mb-3">
-          <span>Science &amp; Technology</span>
-          <span>›</span>
-          <span className="font-medium text-ink">{topic.subcategory}</span>
+      <main className="flex-1 max-w-[680px] px-6 py-12 md:py-24 text-ink">
+        <div className="text-xs uppercase font-mono tracking-wider text-ink-soft mb-3">
+          Science & Technology › {topic.subcategory || 'General'}
         </div>
 
         <h1 className="font-serif text-2xl md:text-4xl font-semibold text-ink leading-snug">
@@ -181,38 +164,22 @@ export default function TopicOverviewPage() {
           </div>
         )}
 
-        {activeSession ? (
-          <div className="mt-10 p-6 bg-paper-raised border border-supported rounded space-y-4">
-            <div className="flex items-center gap-2">
-              <span className="w-3 h-3 rounded-full bg-supported inline-block" />
-              <h3 className="text-sm font-semibold text-ink">Learning Session Initialized</h3>
-            </div>
-            <div className="space-y-2 text-xs font-mono text-ink-soft">
-              <div>Session ID: {activeSession.id}</div>
-              <div>Status: <span className="text-supported font-bold">{activeSession.status}</span></div>
-            </div>
-            <p className="text-xs text-ink-soft pt-2 border-t border-rule">
-              State machine transition (<code>CREATED → RESEARCHING</code>) complete. In Phase 4, the structured Research Workspace and Research Guide questions will be generated.
-            </p>
-          </div>
-        ) : (
-          <div className="mt-12 flex flex-col sm:flex-row items-center gap-4">
-            <button
-              onClick={handleStartResearch}
-              disabled={isStarting}
-              className="w-full sm:w-auto py-3.5 px-8 bg-accent text-accent-ink hover:brightness-95 font-semibold text-base rounded shadow-sm transition-all disabled:opacity-50"
-            >
-              {isStarting ? 'Preparing session...' : 'Start Research'}
-            </button>
+        <div className="mt-12 flex flex-col sm:flex-row items-center gap-4">
+          <button
+            onClick={handleStartResearch}
+            disabled={isStarting}
+            className="w-full sm:w-auto py-3.5 px-8 bg-accent text-accent-ink hover:brightness-95 font-semibold text-base rounded shadow-sm transition-all disabled:opacity-50"
+          >
+            {isStarting ? 'Generating Research Guide...' : 'Start Research'}
+          </button>
 
-            <Link
-              href="/explore"
-              className="text-xs text-ink-soft hover:text-ink underline transition-colors"
-            >
-              Choose a different topic
-            </Link>
-          </div>
-        )}
+          <Link
+            href="/explore"
+            className="text-xs text-ink-soft hover:text-ink underline transition-colors"
+          >
+            Choose a different topic
+          </Link>
+        </div>
       </main>
     </div>
   );
