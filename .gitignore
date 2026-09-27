@@ -49,3 +49,4 @@ tmp/
 *.njsproj
 *.sln
 *.sw?
+*.tsbuildinfo

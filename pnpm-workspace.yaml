@@ -4,3 +4,6 @@ packages:
 
 onlyBuiltDependencies:
   - '@nestjs/core'
+
+allowBuilds:
+  esbuild: true

@@ -3,12 +3,14 @@ import {
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
-import { LearningSession, SessionStatus } from '@prisma/client';
+import { LearningSession, SessionStatus, Topic } from '@prisma/client';
 import { SessionsRepository } from './sessions.repository';
 import { TopicsService } from '../topics/topics.service';
 import { RedisService } from '../common/redis.service';
 import { assertResourceOwnership, ResourceRequester } from '../auth/guards/ownership.util';
 import { validateSessionTransition } from './session-state-machine';
+
+export type SessionWithTopic = LearningSession & { topic: Topic };
 
 @Injectable()
 export class SessionsService {
@@ -58,34 +60,26 @@ export class SessionsService {
     sessionId: string,
     requester: ResourceRequester,
   ): Promise<LearningSession> {
-    const session = await this.sessionsRepository.findById(sessionId);
-    if (!session) {
-      throw new NotFoundException(`Session not found: ${sessionId}`);
-    }
+    return this.transitionStatus(sessionId, SessionStatus.RESEARCHING, requester);
+  }
 
-    await this.verifySessionOwnership(session, requester);
-    validateSessionTransition(session.status, SessionStatus.RESEARCHING);
-
-    return this.sessionsRepository.updateStatus(sessionId, SessionStatus.RESEARCHING);
+  async readyToPresent(
+    sessionId: string,
+    requester: ResourceRequester,
+  ): Promise<LearningSession> {
+    return this.transitionStatus(sessionId, SessionStatus.READY_TO_PRESENT, requester);
   }
 
   async abandonSession(
     sessionId: string,
     requester: ResourceRequester,
   ): Promise<LearningSession> {
-    const session = await this.sessionsRepository.findById(sessionId);
-    if (!session) {
-      throw new NotFoundException(`Session not found: ${sessionId}`);
-    }
-
-    await this.verifySessionOwnership(session, requester);
-    validateSessionTransition(session.status, SessionStatus.ABANDONED);
-
-    return this.sessionsRepository.updateStatus(sessionId, SessionStatus.ABANDONED);
+    return this.transitionStatus(sessionId, SessionStatus.ABANDONED, requester);
   }
 
-  async getSession(
+  async transitionStatus(
     sessionId: string,
+    targetStatus: SessionStatus,
     requester: ResourceRequester,
   ): Promise<LearningSession> {
     const session = await this.sessionsRepository.findById(sessionId);
@@ -94,10 +88,25 @@ export class SessionsService {
     }
 
     await this.verifySessionOwnership(session, requester);
-    return session;
+    validateSessionTransition(session.status, targetStatus);
+
+    return this.sessionsRepository.updateStatus(sessionId, targetStatus);
   }
 
-  private async verifySessionOwnership(
+  async getSession(
+    sessionId: string,
+    requester: ResourceRequester,
+  ): Promise<SessionWithTopic> {
+    const session = await this.sessionsRepository.findById(sessionId);
+    if (!session) {
+      throw new NotFoundException(`Session not found: ${sessionId}`);
+    }
+
+    await this.verifySessionOwnership(session, requester);
+    return session as SessionWithTopic;
+  }
+
+  async verifySessionOwnership(
     session: LearningSession,
     requester: ResourceRequester,
   ): Promise<void> {
