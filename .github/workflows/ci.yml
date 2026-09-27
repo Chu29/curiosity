@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [main]
+    branches: [main, 'feature/*']
   pull_request:
     branches: [main]
 
@@ -26,6 +26,11 @@ jobs:
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile --ignore-scripts
+
+      - name: Setup environment and generate Prisma client
+        run: |
+          cp .env.example .env
+          pnpm exec prisma generate
 
       - name: Lint
         run: pnpm run lint

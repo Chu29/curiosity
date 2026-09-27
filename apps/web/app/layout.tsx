@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import './globals.css';
+import { AuthProvider } from '../lib/auth/auth-context';
 
 export const metadata: Metadata = {
   title: 'Curiosity — Science & Technology Learning Platform',
@@ -13,7 +14,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body className="antialiased bg-gray-50 text-gray-900 min-h-screen">
+        <AuthProvider>{children}</AuthProvider>
+      </body>
     </html>
   );
 }
