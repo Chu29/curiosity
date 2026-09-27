@@ -1,34 +1,82 @@
-import Link from 'next/link';
+'use client';
 
-export default function HomePage() {
+import Link from 'next/link';
+import { useAuth } from '../lib/auth/auth-context';
+
+export default function LandingPage() {
+  const { user, guest, logout } = useAuth();
+
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center p-6 text-center">
-      <div className="max-w-xl">
-        <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-800 mb-4">
-          Science &amp; Technology MVP
-        </span>
-        <h1 className="text-4xl sm:text-5xl font-extrabold tracking-tight text-gray-900">
+    <div className="min-h-screen bg-paper flex flex-col justify-between p-6 sm:p-12 relative">
+      {/* Top Header */}
+      <header className="flex items-center justify-between max-w-5xl w-full mx-auto">
+        <Link href="/" className="font-serif font-bold text-2xl text-ink tracking-tight">
           Curiosity
+        </Link>
+        <div className="flex items-center gap-4">
+          {user ? (
+            <div className="flex items-center gap-3">
+              <span className="text-sm text-ink-soft hidden sm:inline">
+                {user.name || user.email}
+              </span>
+              <button
+                onClick={logout}
+                className="py-1.5 px-3 bg-paper-raised border border-rule text-ink hover:bg-gray-100 rounded text-xs font-medium transition-colors"
+              >
+                Sign Out
+              </button>
+            </div>
+          ) : guest ? (
+            <div className="flex items-center gap-3">
+              <span className="text-xs text-ink-soft font-mono bg-white px-2 py-1 rounded border border-rule">
+                Guest active
+              </span>
+              <Link
+                href="/auth"
+                className="py-1.5 px-3 bg-paper-raised border border-rule text-ink hover:bg-gray-100 rounded text-xs font-medium transition-colors"
+              >
+                Sign In
+              </Link>
+            </div>
+          ) : (
+            <Link
+              href="/auth"
+              className="py-2 px-4 bg-paper-raised border border-rule-strong text-ink hover:bg-gray-100 rounded text-sm font-medium transition-colors"
+            >
+              Sign Up / Log In
+            </Link>
+          )}
+        </div>
+      </header>
+
+      {/* Hero Section */}
+      <main className="max-w-3xl w-full mx-auto text-center my-auto py-12">
+        <h1 className="font-serif text-3xl sm:text-5xl font-semibold text-ink leading-tight sm:leading-snug">
+          Turn curiosity into knowledge by researching and teaching what you learn.
         </h1>
-        <p className="mt-4 text-lg text-gray-600">
-          Research, present, and receive evidence-grounded feedback on deep science &amp; technology concepts.
+
+        <p className="mt-4 text-base sm:text-lg text-ink-soft font-medium">
+          Science &amp; Technology
         </p>
 
-        <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center">
+        <div className="mt-10 flex flex-col items-center">
           <Link
-            href="/auth"
-            className="py-3 px-6 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg text-sm transition-colors shadow-sm"
+            href="/explore"
+            className="inline-block py-4 px-8 bg-accent text-accent-ink hover:brightness-95 font-semibold text-base rounded shadow-sm transition-all"
           >
-            Sign In / Get Started
+            Give Me a Topic
           </Link>
-          <Link
-            href="/dashboard"
-            className="py-3 px-6 bg-white hover:bg-gray-50 border border-gray-300 text-gray-700 font-medium rounded-lg text-sm transition-colors"
-          >
-            Dashboard
-          </Link>
+
+          <p className="mt-8 text-xs sm:text-sm text-ink-soft tracking-wide">
+            Research &nbsp;→&nbsp; Present &nbsp;→&nbsp; Evaluate
+          </p>
         </div>
-      </div>
-    </main>
+      </main>
+
+      {/* Footer */}
+      <footer className="max-w-5xl w-full mx-auto text-center text-xs text-ink-soft py-4 border-t border-rule">
+        A disciplined research instrument for independent science &amp; technology inquiry.
+      </footer>
+    </div>
   );
 }
