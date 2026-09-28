@@ -16,7 +16,11 @@ export const EnvSchema = z.object({
     .string({ required_error: 'JWT_REFRESH_SECRET is required' })
     .min(16, 'JWT_REFRESH_SECRET must be at least 16 characters long'),
 
+  LLM_PROVIDER: z.enum(['gemini', 'openai', 'mock']).default('gemini'),
   LLM_API_KEY: z.string({ required_error: 'LLM_API_KEY is required' }).min(1, 'LLM_API_KEY cannot be empty'),
+  GEMINI_API_KEY: z.string().optional(),
+  GEMINI_MODEL: z.string().default('gemini-2.0-flash'),
+
   EMBEDDING_API_KEY: z.string({ required_error: 'EMBEDDING_API_KEY is required' }).min(1, 'EMBEDDING_API_KEY cannot be empty'),
   TRANSCRIPTION_API_KEY: z.string({ required_error: 'TRANSCRIPTION_API_KEY is required' }).min(1, 'TRANSCRIPTION_API_KEY cannot be empty'),
 
