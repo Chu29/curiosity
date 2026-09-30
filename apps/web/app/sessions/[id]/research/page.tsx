@@ -3,7 +3,8 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { MarginRail } from '../../../../components/navigation/margin-rail';
+import { AppShell } from '../../../../components/layout/app-shell';
+import { EmptyState, ErrorState, LoadingState, TextLink } from '../../../../components/ui';
 import { apiFetch } from '../../../../lib/api/client';
 import type {
   ResearchGuideResponse,
@@ -181,34 +182,18 @@ export default function ResearchWorkspacePage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-paper flex flex-col md:flex-row">
-        <MarginRail currentStep="RESEARCH" />
-        <main className="flex-1 px-6 py-12 md:py-24 text-ink max-w-6xl mx-auto">
-          <div className="font-mono text-xs uppercase tracking-wider text-ink-soft animate-pulse">
-            Loading research workspace...
-          </div>
-        </main>
-      </div>
+      <AppShell step="RESEARCH" wide><LoadingState message="Loading research workspace…" /></AppShell>
     );
   }
 
   if (error || !guide) {
     return (
-      <div className="min-h-screen bg-paper flex flex-col md:flex-row">
-        <MarginRail currentStep="RESEARCH" />
-        <main className="flex-1 px-6 py-12 md:py-24 text-ink max-w-6xl mx-auto space-y-6">
-          <h1 className="font-serif text-2xl font-semibold text-danger">Workspace Error</h1>
-          <p className="text-sm text-ink-soft">{error || 'Unable to load workspace.'}</p>
-        </main>
-      </div>
+      <AppShell step="RESEARCH" wide><ErrorState title="Workspace unavailable" message={error || 'Unable to load workspace.'} /></AppShell>
     );
   }
 
   return (
-    <div className="min-h-screen bg-paper flex flex-col md:flex-row">
-      <MarginRail currentStep="RESEARCH" />
-
-      <main className="flex-1 px-4 sm:px-8 py-8 md:py-16 text-ink max-w-6xl w-full">
+    <AppShell step="RESEARCH" wide>
         {/* Workspace Header */}
         <header className="flex flex-col sm:flex-row sm:items-center justify-between pb-6 border-b border-rule gap-4">
           <div>
@@ -228,12 +213,12 @@ export default function ResearchWorkspacePage() {
               </span>
             </div>
 
-            <Link
+            <TextLink
               href={`/sessions/${sessionId}/brief`}
               className="py-2.5 px-5 bg-paper-raised border border-rule-strong hover:border-ink font-semibold text-xs rounded transition-colors text-ink shadow-sm"
             >
               Proceed to Presentation Brief →
-            </Link>
+            </TextLink>
           </div>
         </header>
 
@@ -562,7 +547,6 @@ export default function ResearchWorkspacePage() {
             )}
           </div>
         </section>
-      </main>
-    </div>
+      </AppShell>
   );
 }
