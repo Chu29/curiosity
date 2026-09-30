@@ -27,13 +27,18 @@ async function bootstrap(): Promise<void> {
   app.useLogger(app.get(Logger));
 
   app.enableCors({
-    origin: [
-      'http://localhost:3000',
-      'http://127.0.0.1:3000',
-    ],
+    // Reflect the requesting origin so browser clients from any host can
+    // reach the API while credentials remain enabled.
+    origin: true,
     credentials: true,
     methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Accept', 'Authorization', 'X-Request-Id'],
+    allowedHeaders: [
+      'Content-Type',
+      'Accept',
+      'Authorization',
+      'X-Request-Id',
+      'X-Guest-Token',
+    ],
   });
 
   app.setGlobalPrefix('api/v1');
