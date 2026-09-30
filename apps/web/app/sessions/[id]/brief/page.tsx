@@ -3,7 +3,8 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { MarginRail } from '../../../../components/navigation/margin-rail';
+import { AppShell } from '../../../../components/layout/app-shell';
+import { Button, Divider, ErrorState, LoadingState, PageTitle, ScreenActions, StatusBadge, TextLink } from '../../../../components/ui';
 import { apiFetch } from '../../../../lib/api/client';
 import type {
   ResearchGuideResponse,
@@ -69,26 +70,13 @@ export default function PresentationBriefPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-paper flex flex-col md:flex-row">
-        <MarginRail currentStep="RESEARCH" />
-        <main className="flex-1 max-w-[680px] px-6 py-12 md:py-24 text-ink">
-          <div className="font-mono text-xs uppercase tracking-wider text-ink-soft animate-pulse">
-            Loading presentation brief...
-          </div>
-        </main>
-      </div>
+      <AppShell step="PRESENT"><LoadingState message="Loading presentation brief…" /></AppShell>
     );
   }
 
   if (error && !guide) {
     return (
-      <div className="min-h-screen bg-paper flex flex-col md:flex-row">
-        <MarginRail currentStep="RESEARCH" />
-        <main className="flex-1 max-w-[680px] px-6 py-12 md:py-24 text-ink space-y-6">
-          <h1 className="font-serif text-2xl font-semibold text-danger">Brief Unavailable</h1>
-          <p className="text-sm text-ink-soft">{error}</p>
-        </main>
-      </div>
+      <AppShell step="PRESENT"><ErrorState title="Brief unavailable" message={error || 'The presentation brief could not be loaded.'} /></AppShell>
     );
   }
 
@@ -96,22 +84,12 @@ export default function PresentationBriefPage() {
   const completedQuestions = questions.filter((q) => q.status === 'COMPLETED');
 
   return (
-    <div className="min-h-screen bg-paper flex flex-col md:flex-row">
-      <MarginRail currentStep="RESEARCH" />
-
-      <main className="flex-1 max-w-[680px] px-6 py-12 md:py-24 text-ink space-y-8">
-        <header className="border-b border-rule pb-6">
-          <div className="text-xs uppercase font-mono tracking-wider text-ink-soft mb-2">
-            Pre-Presentation Checklist & Brief
-          </div>
-          <h1 className="font-serif text-3xl md:text-4xl font-semibold text-ink">
-            Ready to Present?
-          </h1>
-        </header>
+    <AppShell step="PRESENT">
+        <PageTitle eyebrow="Pre-presentation checklist" description="One short step remains before you explain the work from memory.">Ready to present?</PageTitle>
 
         {/* Presentation Guidelines */}
         <section className="space-y-4">
-          <div className="p-5 bg-paper-raised border border-rule space-y-3">
+          <div className="instrument-panel">
             <div className="text-xs font-mono font-semibold uppercase tracking-wider text-ink">
               Presentation Target Duration: ~{parsed?.timeLimitMinutes || 5} minutes
             </div>
@@ -129,7 +107,7 @@ export default function PresentationBriefPage() {
         </section>
 
         {/* Hidden Materials Warning Callout (rules-and-boundaries.md §2.2 & design spec Screen 6) */}
-        <div className="p-5 bg-paper-raised border-2 border-partial rounded space-y-2">
+        <div className="instrument-panel" style={{ borderColor: 'var(--partial)' }}>
           <div className="flex items-center gap-2 text-partial font-semibold text-sm">
             <span className="text-base">⚠</span>
             <span>Your notes and sources will be hidden during Presentation Mode.</span>
@@ -145,7 +123,7 @@ export default function PresentationBriefPage() {
           <h3 className="font-serif text-lg font-semibold text-ink">
             Review Your Questions ({completedQuestions.length}/{questions.length} completed)
           </h3>
-          <div className="bg-paper-raised border border-rule p-4 space-y-2">
+          <div className="instrument-panel">
             {questions.map((q) => {
               const isDone = q.status === 'COMPLETED';
               return (
@@ -163,48 +141,33 @@ export default function PresentationBriefPage() {
         </section>
 
         {error && (
-          <div className="p-4 bg-red-50 border border-red-200 text-xs text-red-700 rounded">
-            {error}
-          </div>
+          <ErrorState title="Could not update the session" message={error} />
         )}
 
         {isReady ? (
-          <div className="p-6 bg-paper-raised border border-supported rounded space-y-3">
+          <div className="instrument-panel" style={{ borderColor: 'var(--supported)' }}>
             <div className="flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-supported" />
+              <StatusBadge label="Ready to present" tone="supported" />
               <h4 className="text-sm font-semibold text-ink">Session State: READY_TO_PRESENT</h4>
             </div>
             <p className="text-xs text-ink-soft leading-relaxed">
               Your research phase is marked complete. Phase 5 (Presentation Mode) will provide the microphone recording interface.
             </p>
             <div className="pt-2 flex items-center gap-4">
-              <Link
-                href={`/sessions/${sessionId}/research`}
-                className="text-xs text-ink-soft hover:text-ink underline transition-colors"
-              >
-                ← Return to Research Workspace
-              </Link>
+              <TextLink href={`/sessions/${sessionId}/research`}>← Return to research workspace</TextLink>
             </div>
           </div>
         ) : (
-          <div className="pt-4 border-t border-rule flex flex-col sm:flex-row items-center gap-4">
-            <button
+          <ScreenActions>
+            <Button
               onClick={handleReadyToPresent}
               disabled={isTransitioning}
-              className="w-full sm:w-auto py-3.5 px-8 bg-accent text-accent-ink hover:brightness-95 font-semibold text-base rounded shadow-sm transition-all disabled:opacity-50"
             >
-              {isTransitioning ? 'Updating session...' : 'Complete Research & Ready to Present'}
-            </button>
-
-            <Link
-              href={`/sessions/${sessionId}/research`}
-              className="text-xs text-ink-soft hover:text-ink underline transition-colors"
-            >
-              Back to workspace
-            </Link>
-          </div>
+              {isTransitioning ? 'Updating session…' : 'Start Presentation'}
+            </Button>
+            <TextLink href={`/sessions/${sessionId}/research`}>Back to workspace</TextLink>
+          </ScreenActions>
         )}
-      </main>
-    </div>
+    </AppShell>
   );
 }
