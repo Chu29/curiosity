@@ -2,7 +2,8 @@
 
 import React, { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { MarginRail } from '../../../../components/navigation/margin-rail';
+import { AppShell } from '../../../../components/layout/app-shell';
+import { Button, Divider, ErrorState, LoadingState, PageTitle, ScreenActions } from '../../../../components/ui';
 import { apiFetch } from '../../../../lib/api/client';
 import type { ResearchGuideResponse, ResearchQuestionItem } from '@curiosity/types';
 
@@ -92,44 +93,21 @@ export default function ResearchGuidePage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-paper flex flex-col md:flex-row">
-        <MarginRail currentStep="GUIDE" />
-        <main className="flex-1 max-w-[680px] px-6 py-12 md:py-24 text-ink">
-          <div className="font-mono text-xs uppercase tracking-wider text-ink-soft animate-pulse">
-            Formulating research guide...
-          </div>
-        </main>
-      </div>
+      <AppShell step="GUIDE"><LoadingState message="Formulating your research guide…" /></AppShell>
     );
   }
 
   if (error || !guide) {
     return (
-      <div className="min-h-screen bg-paper flex flex-col md:flex-row">
-        <MarginRail currentStep="GUIDE" />
-        <main className="flex-1 max-w-[680px] px-6 py-12 md:py-24 text-ink space-y-6">
-          <h1 className="font-serif text-2xl font-semibold text-danger">Research Guide Unavailable</h1>
-          <p className="text-sm text-ink-soft">{error || 'Guide could not be found.'}</p>
-        </main>
-      </div>
+      <AppShell step="GUIDE"><ErrorState title="Research guide unavailable" message={error || 'Guide could not be found.'} /></AppShell>
     );
   }
 
   const parsed = guide.parsedRequirements;
 
   return (
-    <div className="min-h-screen bg-paper flex flex-col md:flex-row">
-      <MarginRail currentStep="GUIDE" />
-
-      <main className="flex-1 max-w-[680px] px-6 py-12 md:py-24 text-ink space-y-12">
-        <header className="border-b border-rule pb-6">
-          <div className="text-xs uppercase font-mono tracking-wider text-ink-soft mb-2">
-            Structured Investigation Plan
-          </div>
-          <h1 className="font-serif text-3xl md:text-4xl font-semibold text-ink">
-            Research Guide
-          </h1>
-        </header>
+    <AppShell step="GUIDE">
+      <PageTitle eyebrow="Structured investigation plan" description="A method for investigating the topic, documenting evidence, and preparing to explain it.">Research guide</PageTitle>
 
         {/* Section 1: Objective */}
         <section className="space-y-3">
@@ -142,7 +120,7 @@ export default function ResearchGuidePage() {
           </p>
         </section>
 
-        <div className="border-b border-rule w-full" />
+        <Divider />
 
         {/* Section 2: Research Questions */}
         <section className="space-y-4">
@@ -176,7 +154,7 @@ export default function ResearchGuidePage() {
           </div>
         </section>
 
-        <div className="border-b border-rule w-full" />
+        <Divider />
 
         {/* Section 3: Concepts to Understand */}
         <section className="space-y-4">
@@ -196,7 +174,7 @@ export default function ResearchGuidePage() {
           </div>
         </section>
 
-        <div className="border-b border-rule w-full" />
+        <Divider />
 
         {/* Section 4: Suggested Source Types */}
         <section className="space-y-4">
@@ -217,7 +195,7 @@ export default function ResearchGuidePage() {
           </ul>
         </section>
 
-        <div className="border-b border-rule w-full" />
+        <Divider />
 
         {/* Section 5: Suggested Research Platforms */}
         <section className="space-y-4">
@@ -241,7 +219,7 @@ export default function ResearchGuidePage() {
           </div>
         </section>
 
-        <div className="border-b border-rule w-full" />
+        <Divider />
 
         {/* Section 6: Research Checklist */}
         <section className="space-y-4">
@@ -259,7 +237,7 @@ export default function ResearchGuidePage() {
           </ul>
         </section>
 
-        <div className="border-b border-rule w-full" />
+        <Divider />
 
         {/* Section 7: Presentation Requirements */}
         <section className="space-y-4">
@@ -267,7 +245,7 @@ export default function ResearchGuidePage() {
             <span className="text-accent font-mono font-bold text-base">7.</span>
             Presentation Requirements
           </h2>
-          <div className="p-4 bg-paper-raised border border-rule rounded space-y-3">
+          <div className="instrument-panel">
             <div className="text-xs font-mono font-semibold uppercase tracking-wider text-ink-soft">
               Target Duration: ~{parsed?.timeLimitMinutes || 5} minutes
             </div>
@@ -285,16 +263,14 @@ export default function ResearchGuidePage() {
         </section>
 
         {/* CTA */}
-        <div className="pt-6 border-t border-rule flex items-center justify-between">
-          <button
+        <ScreenActions>
+          <Button
             onClick={handleStartWorkspace}
             disabled={isStarting}
-            className="py-3.5 px-8 bg-accent text-accent-ink hover:brightness-95 font-semibold text-base rounded shadow-sm transition-all disabled:opacity-50"
           >
-            {isStarting ? 'Entering Workspace...' : 'Start Research'}
-          </button>
-        </div>
-      </main>
-    </div>
+            {isStarting ? 'Entering workspace…' : 'Start Research'}
+          </Button>
+        </ScreenActions>
+    </AppShell>
   );
 }
