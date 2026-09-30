@@ -2,7 +2,8 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { MarginRail } from '../../components/navigation/margin-rail';
+import { AppShell } from '../../components/layout/app-shell';
+import { Button, ErrorState, PageTitle } from '../../components/ui';
 import { useAuth } from '../../lib/auth/auth-context';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001/api/v1';
@@ -44,33 +45,25 @@ export default function TopicDiscoveryPage() {
   };
 
   return (
-    <div className="min-h-screen bg-paper flex flex-col md:flex-row">
-      <MarginRail currentStep="DISCOVER" />
-
-      <main className="flex-1 max-w-2xl px-6 md:px-12 py-12 md:py-24">
-        <h1 className="font-serif text-3xl md:text-4xl font-semibold text-ink">
-          Discover a Topic
-        </h1>
-        <p className="mt-2 text-sm text-ink-soft">
+    <AppShell step="DISCOVER">
+        <PageTitle eyebrow="Science & Technology" description="Generate an unexpected, evidence-grounded research challenge in science and technology.">Discover a topic</PageTitle>
+        <div className="instrument-panel" style={{ marginBottom: 24 }}>
+          <p style={{ margin: 0, color: 'var(--ink-soft)' }}>
           Generate an unexpected, evidence-grounded research challenge in science and technology.
-        </p>
-
-        <div className="my-8 border-b border-rule w-full" />
+          </p>
+        </div>
 
         {error && (
-          <div className="mb-6 p-4 bg-red-50 border border-red-200 text-sm text-red-700 rounded">
-            {error}
-          </div>
+          <ErrorState message={error} />
         )}
 
         <div className="flex flex-col items-start gap-6">
-          <button
+          <Button
             onClick={handleDiscover}
             disabled={isLoading}
-            className="w-full sm:w-auto py-3.5 px-8 bg-accent text-accent-ink hover:brightness-95 font-semibold text-base rounded shadow-sm transition-all disabled:opacity-50"
           >
-            {isLoading ? 'Selecting topic...' : '⟳ Surprise Me'}
-          </button>
+            {isLoading ? 'Selecting topic…' : 'Give Me a Topic'}
+          </Button>
 
           <button
             type="button"
@@ -81,7 +74,7 @@ export default function TopicDiscoveryPage() {
           </button>
 
           {showFilters && (
-            <div className="w-full p-4 bg-paper-raised border border-rule rounded space-y-3">
+            <div className="instrument-panel" style={{ width: '100%', marginTop: 16 }}>
               <label className="block text-xs font-semibold uppercase text-ink-soft">
                 Difficulty Level
               </label>
@@ -109,7 +102,6 @@ export default function TopicDiscoveryPage() {
             </div>
           )}
         </div>
-      </main>
-    </div>
+    </AppShell>
   );
 }

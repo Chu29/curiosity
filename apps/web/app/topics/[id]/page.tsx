@@ -3,7 +3,8 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { MarginRail } from '../../../components/navigation/margin-rail';
+import { AppShell } from '../../../components/layout/app-shell';
+import { Button, Divider, ErrorState, LoadingState, MetadataRow, PageTitle, ScreenActions, TextLink } from '../../../components/ui';
 import { useAuth } from '../../../lib/auth/auth-context';
 import { apiFetch } from '../../../lib/api/client';
 
@@ -91,65 +92,28 @@ export default function TopicOverviewPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-paper flex flex-col md:flex-row">
-        <MarginRail currentStep="OVERVIEW" />
-        <main className="flex-1 max-w-[680px] px-6 py-12 md:py-24 text-ink">
-          <div className="font-mono text-xs uppercase tracking-wider text-ink-soft animate-pulse">
-            Loading topic brief...
-          </div>
-        </main>
-      </div>
+      <AppShell step="OVERVIEW"><LoadingState message="Loading topic brief…" /></AppShell>
     );
   }
 
   if (error || !topic) {
     return (
-      <div className="min-h-screen bg-paper flex flex-col md:flex-row">
-        <MarginRail currentStep="OVERVIEW" />
-        <main className="flex-1 max-w-[680px] px-6 py-12 md:py-24 text-ink space-y-6">
-          <h1 className="font-serif text-2xl font-semibold text-danger">Topic Unavailable</h1>
-          <p className="text-sm text-ink-soft">{error || 'Topic could not be found.'}</p>
-          <div>
-            <Link
-              href="/explore"
-              className="py-2.5 px-5 bg-paper-raised border border-rule font-medium text-sm rounded shadow-sm hover:border-rule-strong"
-            >
-              Back to Topic Discovery
-            </Link>
-          </div>
-        </main>
-      </div>
+      <AppShell step="OVERVIEW"><ErrorState title="Topic unavailable" message={error || 'Topic could not be found.'} action={<TextLink href="/explore">Back to topic discovery</TextLink>} /></AppShell>
     );
   }
 
   return (
-    <div className="min-h-screen bg-paper flex flex-col md:flex-row">
-      <MarginRail currentStep="OVERVIEW" />
-
-      <main className="flex-1 max-w-[680px] px-6 py-12 md:py-24 text-ink">
+    <AppShell step="OVERVIEW">
         <div className="text-xs uppercase font-mono tracking-wider text-ink-soft mb-3">
           Science & Technology › {topic.subcategory || 'General'}
         </div>
 
-        <h1 className="font-serif text-2xl md:text-4xl font-semibold text-ink leading-snug">
-          {topic.title}
-        </h1>
-
-        <div className="mt-4 flex items-center gap-3 text-xs text-ink-soft font-mono">
-          <span className="uppercase tracking-wider font-semibold text-ink">
-            {topic.difficulty}
-          </span>
-          <span>·</span>
-          <span>~{topic.estimatedResearchMinutes} min estimated research</span>
-        </div>
-
-        <div className="my-8 border-b border-rule w-full" />
+        <PageTitle eyebrow={`Science & Technology / ${topic.subcategory || 'General'}`}>{topic.title}</PageTitle>
+        <MetadataRow items={[{ label: 'Difficulty', value: topic.difficulty }, { label: 'Estimated research', value: `~${topic.estimatedResearchMinutes} min` }]} />
 
         {/* Assignment Brief */}
-        <section className="space-y-4">
-          <h2 className="text-xs uppercase font-mono font-semibold tracking-wider text-ink-soft">
-            Mission Objective
-          </h2>
+        <section className="content-section">
+          <h2 className="section-title">Mission objective</h2>
           <p className="text-base sm:text-lg text-ink leading-relaxed">
             {topic.description}
           </p>
@@ -164,23 +128,15 @@ export default function TopicOverviewPage() {
           </div>
         )}
 
-        <div className="mt-12 flex flex-col sm:flex-row items-center gap-4">
-          <button
+        <ScreenActions>
+          <Button
             onClick={handleStartResearch}
             disabled={isStarting}
-            className="w-full sm:w-auto py-3.5 px-8 bg-accent text-accent-ink hover:brightness-95 font-semibold text-base rounded shadow-sm transition-all disabled:opacity-50"
           >
-            {isStarting ? 'Generating Research Guide...' : 'Start Research'}
-          </button>
-
-          <Link
-            href="/explore"
-            className="text-xs text-ink-soft hover:text-ink underline transition-colors"
-          >
-            Choose a different topic
-          </Link>
-        </div>
-      </main>
-    </div>
+            {isStarting ? 'Generating research guide…' : 'Start Research'}
+          </Button>
+          <TextLink href="/explore">Choose a different topic</TextLink>
+        </ScreenActions>
+    </AppShell>
   );
 }

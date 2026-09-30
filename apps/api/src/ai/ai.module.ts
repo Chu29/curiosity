@@ -1,22 +1,28 @@
 import { Module } from '@nestjs/common';
 import { LLM_PROVIDER } from './llm-provider.interface';
 import { MockLlmProvider } from './mock-llm.provider';
-import { OpenAiLlmProvider } from './openai-llm.provider';
+import { GroqLlmProvider } from './groq-llm.provider';
 
 @Module({
   providers: [
     MockLlmProvider,
-    OpenAiLlmProvider,
+    GroqLlmProvider,
     {
       provide: LLM_PROVIDER,
-      useFactory: (mock: MockLlmProvider, openai: OpenAiLlmProvider) => {
-        const apiKey = process.env.LLM_API_KEY;
-        if (!apiKey || apiKey.startsWith('mock-')) {
+      useFactory: (
+        mock: MockLlmProvider,
+        groq: GroqLlmProvider,
+      ) => {
+        const providerName = (process.env.LLM_PROVIDER || 'groq').toLowerCase();
+        const llmKey = process.env.LLM_API_KEY;
+
+        if (providerName === 'mock' || !llmKey || llmKey.startsWith('mock-')) {
           return mock;
         }
-        return openai;
+
+        return providerName === 'groq' ? groq : mock;
       },
-      inject: [MockLlmProvider, OpenAiLlmProvider],
+      inject: [MockLlmProvider, GroqLlmProvider],
     },
   ],
   exports: [LLM_PROVIDER],

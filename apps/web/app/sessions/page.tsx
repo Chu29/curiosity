@@ -1,7 +1,6 @@
+import { AppShell } from '../../components/layout/app-shell';
+import { EmptyState, PageTitle } from '../../components/ui';
+
 export default function SessionsPage() {
-  return (
-    <main className="p-8">
-      <h1 className="text-2xl font-semibold capitalize">sessions</h1>
-    </main>
-  );
+  return <AppShell step="DISCOVER"><PageTitle eyebrow="Learning record" description="Your current research journey will appear here.">Sessions</PageTitle><EmptyState title="No sessions yet" message="Generate a topic to create your first research session." /></AppShell>;
 }

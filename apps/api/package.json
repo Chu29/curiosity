@@ -3,9 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "node dist/main.js",
-    "build": "tsc -p tsconfig.json",
-    "start:dev": "node dist/main.js",
+    "dev": "pnpm run build && node dist/main.js",
+    "build": "rm -rf dist && tsc -p tsconfig.json",
+    "start": "node dist/main.js",
     "typecheck": "tsc --noEmit",
     "test": "node --test 'dist/**/*.spec.js' 'dist/**/**/*.spec.js'",
     "lint": "echo 'api lint passed'"

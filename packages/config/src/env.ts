@@ -16,7 +16,11 @@ export const EnvSchema = z.object({
     .string({ required_error: 'JWT_REFRESH_SECRET is required' })
     .min(16, 'JWT_REFRESH_SECRET must be at least 16 characters long'),
 
+  LLM_PROVIDER: z.enum(['groq', 'mock']).default('groq'),
   LLM_API_KEY: z.string({ required_error: 'LLM_API_KEY is required' }).min(1, 'LLM_API_KEY cannot be empty'),
+  LLM_MODEL: z.string().default('openai/gpt-oss-20b'),
+  LLM_BASE_URL: z.string().url().default('https://api.groq.com/openai/v1'),
+
   EMBEDDING_API_KEY: z.string({ required_error: 'EMBEDDING_API_KEY is required' }).min(1, 'EMBEDDING_API_KEY cannot be empty'),
   TRANSCRIPTION_API_KEY: z.string({ required_error: 'TRANSCRIPTION_API_KEY is required' }).min(1, 'TRANSCRIPTION_API_KEY cannot be empty'),
 

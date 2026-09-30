@@ -13,6 +13,8 @@ describe('validateEnv', () => {
     JWT_ACCESS_SECRET: 'test_jwt_access_secret_longer_than_16_chars',
     JWT_REFRESH_SECRET: 'test_jwt_refresh_secret_longer_than_16_chars',
     LLM_API_KEY: 'mock-llm-key',
+    LLM_MODEL: 'openai/gpt-oss-20b',
+    LLM_BASE_URL: 'https://api.groq.com/openai/v1',
     EMBEDDING_API_KEY: 'mock-embedding-key',
     TRANSCRIPTION_API_KEY: 'mock-transcription-key',
     STORAGE_BUCKET: 'curiosity-uploads',
