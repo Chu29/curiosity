@@ -1,43 +1,28 @@
 import { Module } from '@nestjs/common';
 import { LLM_PROVIDER } from './llm-provider.interface';
 import { MockLlmProvider } from './mock-llm.provider';
-import { OpenAiLlmProvider } from './openai-llm.provider';
-import { GeminiLlmProvider } from './gemini-llm.provider';
+import { GroqLlmProvider } from './groq-llm.provider';
 
 @Module({
   providers: [
     MockLlmProvider,
-    OpenAiLlmProvider,
-    GeminiLlmProvider,
+    GroqLlmProvider,
     {
       provide: LLM_PROVIDER,
       useFactory: (
         mock: MockLlmProvider,
-        openai: OpenAiLlmProvider,
-        gemini: GeminiLlmProvider,
+        groq: GroqLlmProvider,
       ) => {
-        const providerName = (process.env.LLM_PROVIDER || 'gemini').toLowerCase();
-        const geminiKey = process.env.GEMINI_API_KEY || process.env.LLM_API_KEY;
-        const openAiKey = process.env.LLM_API_KEY;
+        const providerName = (process.env.LLM_PROVIDER || 'groq').toLowerCase();
+        const llmKey = process.env.LLM_API_KEY;
 
-        if (providerName === 'mock' || (!geminiKey && !openAiKey)) {
+        if (providerName === 'mock' || !llmKey || llmKey.startsWith('mock-')) {
           return mock;
         }
 
-        if (providerName === 'openai') {
-          if (!openAiKey || openAiKey.startsWith('mock-')) {
-            return mock;
-          }
-          return openai;
-        }
-
-        // Default: Gemini
-        if (!geminiKey || geminiKey.startsWith('mock-')) {
-          return mock;
-        }
-        return gemini;
+        return providerName === 'groq' ? groq : mock;
       },
-      inject: [MockLlmProvider, OpenAiLlmProvider, GeminiLlmProvider],
+      inject: [MockLlmProvider, GroqLlmProvider],
     },
   ],
   exports: [LLM_PROVIDER],
