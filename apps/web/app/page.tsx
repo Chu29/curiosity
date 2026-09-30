@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useAuth } from '../lib/auth/auth-context';
+import { Button } from '../components/ui';
 
 export default function LandingPage() {
   const { user, guest, logout } = useAuth();
@@ -19,12 +20,11 @@ export default function LandingPage() {
               <span className="text-sm text-ink-soft hidden sm:inline">
                 {user.name || user.email}
               </span>
-              <button
+              <Button variant="secondary"
                 onClick={logout}
-                className="py-1.5 px-3 bg-paper-raised border border-rule text-ink hover:bg-gray-100 rounded text-xs font-medium transition-colors"
               >
                 Sign Out
-              </button>
+              </Button>
             </div>
           ) : guest ? (
             <div className="flex items-center gap-3">
@@ -33,7 +33,7 @@ export default function LandingPage() {
               </span>
               <Link
                 href="/auth"
-                className="py-1.5 px-3 bg-paper-raised border border-rule text-ink hover:bg-gray-100 rounded text-xs font-medium transition-colors"
+                className="ui-button ui-button--secondary"
               >
                 Sign In
               </Link>
@@ -41,7 +41,7 @@ export default function LandingPage() {
           ) : (
             <Link
               href="/auth"
-              className="py-2 px-4 bg-paper-raised border border-rule-strong text-ink hover:bg-gray-100 rounded text-sm font-medium transition-colors"
+              className="ui-button ui-button--secondary"
             >
               Sign Up / Log In
             </Link>
@@ -62,7 +62,7 @@ export default function LandingPage() {
         <div className="mt-10 flex flex-col items-center">
           <Link
             href="/explore"
-            className="inline-block py-4 px-8 bg-accent text-accent-ink hover:brightness-95 font-semibold text-base rounded shadow-sm transition-all"
+            className="ui-button ui-button--primary"
           >
             Give Me a Topic
           </Link>
