@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { useAuth } from '../../lib/auth/auth-context';
+import { Button, ErrorState, LoadingState, TextLink } from '../../components/ui';
 
 export default function AuthPage() {
   const { login, register, continueAsGuest, isLoading: authLoading } = useAuth();
@@ -44,36 +45,29 @@ export default function AuthPage() {
 
   if (authLoading) {
     return (
-      <div className="flex min-h-screen items-center justify-center">
-        <div className="text-gray-500 font-medium">Loading session...</div>
-      </div>
+      <div className="page-container" style={{ margin: '0 auto' }}><LoadingState message="Restoring your session…" /></div>
     );
   }
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center p-4">
-      <div className="w-full max-w-md bg-white rounded-xl shadow-md border border-gray-100 p-8">
-        <div className="text-center mb-6">
-          <h1 className="text-2xl font-bold text-gray-900 tracking-tight">
+    <div className="app-shell" style={{ minHeight: '100vh' }}><main className="page-container" style={{ margin: 'auto', width: 'min(440px, calc(100vw - 32px))' }}>
+      <div className="screen-header" style={{ textAlign: 'center' }}>
+          <h1 className="page-title">
             {isLogin ? 'Welcome back' : 'Create your account'}
           </h1>
-          <p className="text-sm text-gray-500 mt-1">
+          <p className="screen-description">
             {isLogin
               ? 'Enter your credentials to access your research'
               : 'Start your science & technology research journey'}
           </p>
         </div>
 
-        {error && (
-          <div className="mb-4 rounded-lg bg-red-50 p-3 text-sm text-red-700 border border-red-200">
-            {error}
-          </div>
-        )}
+        {error && <ErrorState message={error} />}
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="content-section">
           {!isLogin && (
-            <div>
-              <label className="block text-xs font-semibold uppercase text-gray-600 mb-1">
+            <div className="content-section">
+              <label className="screen-eyebrow">
                 Name (optional)
               </label>
               <input
@@ -81,13 +75,13 @@ export default function AuthPage() {
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="Jane Doe"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full"
               />
             </div>
           )}
 
-          <div>
-            <label className="block text-xs font-semibold uppercase text-gray-600 mb-1">
+          <div className="content-section">
+            <label className="screen-eyebrow">
               Email Address
             </label>
             <input
@@ -96,12 +90,12 @@ export default function AuthPage() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="learner@example.com"
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full"
             />
           </div>
 
-          <div>
-            <label className="block text-xs font-semibold uppercase text-gray-600 mb-1">
+          <div className="content-section">
+            <label className="screen-eyebrow">
               Password
             </label>
             <input
@@ -111,24 +105,23 @@ export default function AuthPage() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="••••••••"
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full"
             />
             {!isLogin && (
               <p className="text-xs text-gray-400 mt-1">Must be at least 8 characters</p>
             )}
           </div>
 
-          <button
+          <Button
             type="submit"
             disabled={isSubmitting}
-            className="w-full py-2.5 px-4 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg text-sm transition-colors disabled:opacity-50"
           >
             {isSubmitting
               ? 'Please wait...'
               : isLogin
               ? 'Sign In'
               : 'Create Account'}
-          </button>
+          </Button>
         </form>
 
         <div className="relative my-6">
@@ -140,14 +133,14 @@ export default function AuthPage() {
           </div>
         </div>
 
-        <button
+        <Button
           type="button"
           onClick={handleGuest}
           disabled={isSubmitting}
-          className="w-full py-2.5 px-4 border border-gray-300 bg-white hover:bg-gray-50 text-gray-700 font-medium rounded-lg text-sm transition-colors disabled:opacity-50"
+          variant="secondary"
         >
           Continue as Guest
-        </button>
+        </Button>
 
         <div className="mt-6 text-center text-sm text-gray-500">
           {isLogin ? (
@@ -159,7 +152,7 @@ export default function AuthPage() {
                   setIsLogin(false);
                   setError(null);
                 }}
-                className="text-blue-600 font-semibold hover:underline"
+                className="text-link"
               >
                 Sign up
               </button>
@@ -173,14 +166,13 @@ export default function AuthPage() {
                   setIsLogin(true);
                   setError(null);
                 }}
-                className="text-blue-600 font-semibold hover:underline"
+                className="text-link"
               >
                 Sign in
               </button>
             </>
           )}
         </div>
-      </div>
-    </div>
+      </main></div>
   );
 }
