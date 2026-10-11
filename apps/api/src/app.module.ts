@@ -22,6 +22,7 @@ import { KnowledgeModule } from './knowledge/knowledge.module';
 import { AiModule } from './ai/ai.module';
 import { JobsModule } from './jobs/jobs.module';
 import { PrismaModule } from './prisma/prisma.module';
+import { StorageModule } from './storage/storage.module';
 
 @Module({
   imports: [
@@ -52,6 +53,7 @@ import { PrismaModule } from './prisma/prisma.module';
     }),
     RedisModule,
     PrismaModule,
+    StorageModule,
     AuthModule,
     UsersModule,
     TopicsModule,
