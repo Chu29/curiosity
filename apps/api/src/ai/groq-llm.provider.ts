@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Topic } from '@prisma/client';
 import { ResearchGuideDraft, ParsedRequirements } from '@curiosity/types';
+import { ParsedRequirementsSchema } from '@curiosity/validation';
 import { LLMProvider } from './llm-provider.interface';
 
 @Injectable()
@@ -72,7 +73,7 @@ Do not provide direct answers to the research questions. Return only valid JSON 
       checklist?: string[];
     };
 
-    const parsedRequirements: ParsedRequirements = {
+    const parsedRequirementsCandidate: ParsedRequirements = {
       timeLimitMinutes: parsed.timeLimitMinutes || 5,
       requiredCoverage: this.asStringArray(parsed.requiredCoverage),
       concepts: parsed.concepts || [],
@@ -81,14 +82,19 @@ Do not provide direct answers to the research questions. Return only valid JSON 
       checklist: parsed.checklist || [],
     };
 
+    // Groq may omit optional planning fields even when it returns a usable
+    // objective and question set. Do not attach an invalid optional object to
+    // the draft; the guide schema will still enforce the required fields.
+    const parsedRequirements = ParsedRequirementsSchema.safeParse(parsedRequirementsCandidate);
+
     return {
       objective: parsed.objective,
       questions: parsed.questions.map((question) => ({
         question: question.question,
         required: this.asBoolean(question.required),
       })),
-      presentationRequirements: JSON.stringify(parsedRequirements),
-      parsedRequirements,
+      presentationRequirements: JSON.stringify(parsedRequirementsCandidate),
+      ...(parsedRequirements.success ? { parsedRequirements: parsedRequirements.data } : {}),
     };
   }
 
