@@ -33,6 +33,8 @@ export async function apiFetch<T>(
   options?: RequestInit,
 ): Promise<T> {
   const authHeaders = getAuthHeaders();
+  const isMultipart = typeof FormData !== "undefined" && options?.body instanceof FormData;
+  if (isMultipart) delete authHeaders["Content-Type"];
   const res = await fetch(`${API_BASE}${path}`, {
     ...options,
     headers: {
