@@ -51,7 +51,13 @@ export class GuidesService {
     }
 
     this.logger.log(`Requesting LLM research guide for session: ${sessionId}, topic: ${session.topic.title}`);
-    const rawDraft = await this.llmProvider.generateResearchGuide(session.topic);
+    let rawDraft;
+    try {
+      rawDraft = await this.llmProvider.generateResearchGuide(session.topic);
+    } catch (error) {
+      this.logger.error(`Research guide provider failed: ${error instanceof Error ? error.message : 'unknown error'}`);
+      throw new BadGatewayException('The research guide provider is temporarily unavailable. Please try again shortly.');
+    }
 
     // Step 1: Zod schema validation (rules-and-boundaries.md §5.1)
     const schemaResult = ResearchGuideDraftSchema.safeParse(rawDraft);

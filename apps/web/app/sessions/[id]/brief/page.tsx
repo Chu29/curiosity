@@ -2,7 +2,6 @@
 
 import React, { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import Link from 'next/link';
 import { AppShell } from '../../../../components/layout/app-shell';
 import { Button, Divider, ErrorState, LoadingState, PageTitle, ScreenActions, StatusBadge, TextLink } from '../../../../components/ui';
 import { apiFetch } from '../../../../lib/api/client';
@@ -61,6 +60,7 @@ export default function PresentationBriefPage() {
       );
       setSessionStatus(updated.status);
       setIsReady(true);
+      router.push(`/sessions/${sessionId}/present`);
     } catch (err: any) {
       setError(err.message || 'Failed to transition session to ready to present');
     } finally {
@@ -154,6 +154,9 @@ export default function PresentationBriefPage() {
               Your research phase is marked complete. Phase 5 (Presentation Mode) will provide the microphone recording interface.
             </p>
             <div className="pt-2 flex items-center gap-4">
+              <Button onClick={() => router.push(`/sessions/${sessionId}/present`)}>
+                Enter Presentation Mode
+              </Button>
               <TextLink href={`/sessions/${sessionId}/research`}>← Return to research workspace</TextLink>
             </div>
           </div>

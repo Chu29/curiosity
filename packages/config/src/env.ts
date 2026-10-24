@@ -25,6 +25,11 @@ export const EnvSchema = z.object({
   TRANSCRIPTION_API_KEY: z.string({ required_error: 'TRANSCRIPTION_API_KEY is required' }).min(1, 'TRANSCRIPTION_API_KEY cannot be empty'),
 
   STORAGE_ENDPOINT: z.string().optional(),
+  STORAGE_PROVIDER: z.enum(['s3', 'local']).default('s3'),
+  STORAGE_LOCAL_PATH: z.string().default('.local-storage'),
+  STORAGE_REGION: z.string().default('auto'),
+  STORAGE_FORCE_PATH_STYLE: z.coerce.boolean().default(false),
+  STORAGE_AUTO_CREATE_BUCKET: z.coerce.boolean().default(false),
   STORAGE_BUCKET: z.string({ required_error: 'STORAGE_BUCKET is required' }).min(1, 'STORAGE_BUCKET cannot be empty'),
   STORAGE_ACCESS_KEY: z.string({ required_error: 'STORAGE_ACCESS_KEY is required' }).min(1, 'STORAGE_ACCESS_KEY cannot be empty'),
   STORAGE_SECRET_KEY: z.string({ required_error: 'STORAGE_SECRET_KEY is required' }).min(1, 'STORAGE_SECRET_KEY cannot be empty'),
